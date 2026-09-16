@@ -91,13 +91,35 @@ async def back_to_main_menu_callback(update: Update, context: ContextTypes.DEFAU
     query = update.callback_query
     await query.answer()
     
-    text = (
+    main_menu_text = (
         "<b>እንኳን ወደ Remedial Hub በደህና መጡ!</b> 🎓\n\n"
         "ከታች ያሉትን አማራጮች በመጠቀም ስለ ማዕከላችን ማወቅ፣ ተደጋጋሚ ጥያቄዎችን ማንበብ "
         "ወይም አሁኑኑ መመዝገብ ይችላሉ።"
     )
-    await query.edit_message_text(
-        text=text,
-        parse_mode="HTML",
-        reply_markup=get_main_menu_keyboard()
-    )
+    
+    try:
+        # መልዕክቱ ቪዲዮ፣ ፎቶ ወይም ዶክመንት ከሆነ አጥፍተን አዲስ እንልካለን
+        if query.message.video or query.message.photo or query.message.document:
+            await query.message.delete()
+            await context.bot.send_message(
+                chat_id=query.message.chat_id,
+                text=main_menu_text,
+                parse_mode="HTML",
+                reply_markup=get_main_menu_keyboard()
+            )
+        else:
+            # መልዕክቱ ጽሑፍ ብቻ ከሆነ በተለመደው መንገድ Edit እናደርጋለን
+            await query.edit_message_text(
+                text=main_menu_text,
+                parse_mode="HTML",
+                reply_markup=get_main_menu_keyboard()
+            )
+    except Exception as e:
+        print(f"Error returning to main menu: {e}")
+        # በምንም ምክንያት Edit ማድረግ ካልቻለ አዲስ ይልካል
+        await context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=main_menu_text,
+            parse_mode="HTML",
+            reply_markup=get_main_menu_keyboard()
+        )
