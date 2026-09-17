@@ -22,29 +22,28 @@ def get_force_sub_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(keyboard)
 
 
-def get_main_menu_keyboard() -> InlineKeyboardMarkup:
-    """ዋናው ሜኑ አዝራሮች (Styled Layout)"""
+def get_main_menu_keyboard():
     keyboard = [
+        # 1ኛ ረድፍ፡ Register Now (ከላይ ሙሉ ስፋት)
+        [InlineKeyboardButton("📝 Register Now", callback_data="start_registration", style="success")],
+        
+        # 2ኛ ረድፍ፡ My Status እና FAQ ጎን ለጎን
         [
-            InlineKeyboardButton("ℹ️ About Us", callback_data="nav_about", style="primary")
-        ],
-        [
-            InlineKeyboardButton("🌟 Testimonial", callback_data="nav_testimonial", style="primary"),
+            InlineKeyboardButton("📊 My Status", callback_data="check_status", style="primary"),
             InlineKeyboardButton("❓ FAQ", callback_data="nav_faq", style="primary")
         ],
+        
+        # 3ኛ ረድፍ፡ How To Register? እና About Us ጎን ለጎን
         [
             InlineKeyboardButton("🎥 How To Register?", callback_data="nav_how_to", style="primary"),
-            InlineKeyboardButton("📝 Register Now", callback_data="start_registration", style="success")
+            InlineKeyboardButton("ℹ️ About Us", callback_data="nav_about", style="primary")
         ],
-        [
-            InlineKeyboardButton("📊 My Status", callback_data="check_status", style="primary")
-        ],
-        [
-            InlineKeyboardButton(
-                "📞 Contact Us",
-                url=f"https://t.me/{settings.ADMIN_CONTACT_USERNAME.lstrip('@')}"
-            )
-        ]
+        
+        # 4ኛ ረድፍ፡ Testimonial (ሙሉ ስፋት)
+        [InlineKeyboardButton("🌟 Testimonial", callback_data="nav_testimonial", style="primary")],
+        
+        # 5ኛ ረድፍ፡ Contact Us (ሙሉ ስፋት)
+        [InlineKeyboardButton("📞 Contact Us", url="https://t.me/Remedial_Admin")]
     ]
     return InlineKeyboardMarkup(keyboard)
 
