@@ -245,7 +245,7 @@ async def receipt_received(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bank = context.user_data.get("bank", BANK_CBE)
 
     # 1. ዳታቤዝ ላይ PENDING አድርጎ ማስቀመጥ
-    student_repo.submit_for_verification(
+    saved_record = student_repo.submit_for_verification(
         telegram_id=user.id,
         full_name=full_name,
         stream=stream,
@@ -253,13 +253,22 @@ async def receipt_received(update: Update, context: ContextTypes.DEFAULT_TYPE):
         file_id=file_id
     )
 
+    # 1.1 ዳታቤዙ በትክክል Save ማድረጉን ማረጋገጥ (ከሌለ ወደ አድሚን አይልክም)
+    if not saved_record:
+        await update.message.reply_text(
+            "⚠️ <b>ይቅርታ፣ መረጃዎን ዳታቤዝ ላይ ማስቀመጥ አልተቻለም።</b>\n"
+            "የኔትወርክ መጨናነቅ አጋጥሞ ሊሆን ስለሚችል፣ እባክዎ ፎቶውን እንደገና ይላኩ።",
+            parse_mode="HTML"
+        )
+        return AWAITING_RECEIPT
+
     # 2. ለተማሪው ማረጋገጫ መላክ
     user_confirm_text = (
         "⏳ <b>የምዝገባ ጥያቄዎ በመገምገም ላይ ይገኛል (On Review/Pending)</b>\n\n"
         f"👤 <b>ስም፦</b> {full_name}\n"
         f"📚 <b>Stream፦</b> {stream}\n"
         f"🏦 <b>ባንክ፦</b> {bank}\n\n"
-        "የከፈሉት ክፍያ በአድሚኖች ታይቶ እስኪረጋገጥ ድረስ ከ <b>2-4 ሰዓት</b> በትዕግስት ይጠብቁ።\n"
+        "የከፈሉት ክፍያ በአድሚኖች ታይቶ እስኪረጋገጥ ድረስ ከ <b>2 እስከ 3 ሰዓት</b> በትዕግስት ይጠብቁ።\n"
         "ልክ እንደተረጋገጠ የመማሪያ ሊንክዎን በዚህ ቦት የምንልክልዎ ይሆናል።\n\n"
         "✨ <i>Remedial Hub — መልካም ቆይታ!</i>"
     )

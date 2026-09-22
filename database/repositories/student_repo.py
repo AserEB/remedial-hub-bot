@@ -40,8 +40,9 @@ class StudentRepository:
         payment_method: str,
         file_id: str
     ) -> Optional[Dict[str, Any]]:
-        """ምዝገባው ተጠናቆ ደረሰኝ ሲላክ ወደ PENDING የሚቀይር"""
+        """ምዝገባው ተጠናቆ ደረሰኝ ሲላክ ወደ PENDING የሚቀይር (ሪከርድ ከሌለም አዲስ የሚፈጥር)"""
         data = {
+            "telegram_id": telegram_id,  # Upsert እንዲሰራ የ Primary Key መኖር ግዴታ ነው
             "full_name": full_name,
             "stream": stream,
             "payment_method": payment_method,
@@ -50,24 +51,8 @@ class StudentRepository:
             "processing_lock_by": None,
             "processing_lock_until": None
         }
-        res = self.table.update(data).eq("telegram_id", telegram_id).execute()
-        return res.data[0] if res.data else None
-
-    def reset_for_re_registration(self, telegram_id: int) -> Optional[Dict[str, Any]]:
-        """
-        Discard የተደረገ ተማሪ እንደገና ሲመዘገብ የድሮውን Stream እና
-        የክፍያ መረጃ Reset አድርጎ ከስሩ እንደ አዲስ የሚያስጀምር ወሳኝ ሜተድ
-        """
-        data = {
-            "stream": None,
-            "payment_method": None,
-            "payment_screenshot_file_id": None,
-            "payment_screenshot_url": None,
-            "status": STATUS_STARTED,
-            "processing_lock_by": None,
-            "processing_lock_until": None
-        }
-        res = self.table.update(data).eq("telegram_id", telegram_id).execute()
+        # UPDATE ከማድረግ ይልቅ UPSERT እንጠቀማለን (ካለ ያዘምናል፣ ከሌለ 100% አዲስ ይፈጥራል)
+        res = self.table.upsert(data).execute()
         return res.data[0] if res.data else None
 
 
