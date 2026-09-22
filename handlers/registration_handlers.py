@@ -259,7 +259,7 @@ async def receipt_received(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"👤 <b>ስም፦</b> {full_name}\n"
         f"📚 <b>Stream፦</b> {stream}\n"
         f"🏦 <b>ባንክ፦</b> {bank}\n\n"
-        "የከፈሉት ክፍያ በአድሚኖች ታይቶ እስኪረጋገጥ ድረስ ከ <b>2 እስከ 3 ትዓት</b> በትዕግስት ይጠብቁ።\n"
+        "የከፈሉት ክፍያ በአድሚኖች ታይቶ እስኪረጋገጥ ድረስ ከ <b>2-3 ሰዓት</b> በትዕግስት ይጠብቁ።\n"
         "ልክ እንደተረጋገጠ የመማሪያ ሊንክዎን በዚህ ቦት የምንልክልዎ ይሆናል።\n\n"
         "✨ <i>Remedial Hub — መልካም ቆይታ!</i>"
     )
