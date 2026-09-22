@@ -31,7 +31,7 @@ def get_main_menu_keyboard():
         [
             InlineKeyboardButton("📊 My Status", callback_data="check_status", style="primary"),
             InlineKeyboardButton("❓ FAQ", callback_data="nav_faq", style="primary")
-        ],
+        ],b
         
         # 3ኛ ረድፍ፡ How To Register? እና About Us ጎን ለጎን
         [
