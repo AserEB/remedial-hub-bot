@@ -193,7 +193,7 @@ async def bank_selected(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = (
         f"🏦 <b>{bank_title} የክፍያ መረጃ፦</b>\n\n"
         f"💰 <b>የሚከፈል መጠን፦</b> <code>{fee}</code> ብር\n"
-        "❗️ <i>ይህ ክፍያ ለ 1 ሳምንት ብቻ የሚቆይ ልዩ ቅናሽ ነው፤ ከዛ በኋላ ዋጋ ይጨምራል!</i>\n"
+        #"❗️ <i>ይህ ክፍያ ለ 1 ሳምንት ብቻ የሚቆይ ልዩ ቅናሽ ነው፤ ከዛ በኋላ ዋጋ ይጨምራል!</i>\n"
         f"⚠️ <i>ከ {fee} ብር በታችም ሆነ በላይ መክፈል ተቀባይነት የለውም!</i>\n\n"
         f"👤 <b>የሂሳብ ስም፦</b> <code>{acc_name}</code>\n"
         f"💳 <b>የሂሳብ ቁጥር (ይጫኑት ኮፒ ይሆናል)፦</b>\n"
