@@ -158,6 +158,58 @@ class AdminRepository:
 
         return counts
 
+    def get_weekly_status_counts(self) -> Dict[str, int]:
+        """
+        ከእሑድ ምሽት 2:00 EAT (17:00 UTC) ጀምሮ የተመዘገቡትን ብቻ ለይቶ ይቆጥራል
+        """
+        counts = {
+            "weekly_total": 0,
+            "weekly_pending": 0,
+            "weekly_verified": 0,
+            "weekly_discarded": 0,
+            "weekly_natural": 0,
+            "weekly_social": 0
+        }
+        
+        # 1. ያለፈውን እሑድ ምሽት 2:00 (17:00 UTC) መነሻ ሰዓት ማስላት
+        now_utc = datetime.now(timezone.utc)
+        # Python weekday: Monday=0, ..., Sunday=6
+        days_since_sunday = (now_utc.weekday() + 1) % 7
+        target_sunday = (now_utc - timedelta(days=days_since_sunday)).replace(
+            hour=17, minute=0, second=0, microsecond=0
+        )
+        
+        # ዛሬ እሑድ ሆኖ ገና 17:00 UTC ካልደረሰ ካለፈው ሳምንት እሑድ ይጀምራል
+        if now_utc < target_sunday:
+            target_sunday -= timedelta(days=7)
+            
+        target_iso = target_sunday.isoformat()
+
+        try:
+            # created_at ከ እሑድ ምሽት 2:00 ወዲህ የሆኑትን ብቻ መምረጥ
+            res = self.students_table.select("status, stream, created_at").gte("created_at", target_iso).execute()
+            if res.data:
+                counts["weekly_total"] = len(res.data)
+                for row in res.data:
+                    status = row.get("status")
+                    stream = row.get("stream")
+
+                    if status == STATUS_PENDING:
+                        counts["weekly_pending"] += 1
+                    elif status == STATUS_VERIFIED:
+                        counts["weekly_verified"] += 1
+                    elif status == STATUS_DISCARDED:
+                        counts["weekly_discarded"] += 1
+
+                    if stream == STREAM_NATURAL:
+                        counts["weekly_natural"] += 1
+                    elif stream == STREAM_SOCIAL:
+                        counts["weekly_social"] += 1
+        except Exception:
+            pass
+
+        return counts
+
     def _log_action(
         self,
         student_id: int,
