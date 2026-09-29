@@ -1,3 +1,4 @@
+from datetime import datetime, timezone, timedelta
 from telegram import Update
 from telegram.ext import (
     ContextTypes,
@@ -88,10 +89,39 @@ async def toggle_registration_callback(update: Update, context: ContextTypes.DEF
 # QUICK STATUS & WEEKLY DASHBOARD
 # ==========================================
 
+def _get_time_remaining_until_reset() -> str:
+    """ቀጣዩ እሑድ ምሽት 2:00 EAT (17:00 UTC) እስኪደርስ የቀረውን ጊዜ ያሰላል"""
+    now_utc = datetime.now(timezone.utc)
+    
+    # Python weekday: Monday=0, ..., Sunday=6
+    # ወደ ቀጣዩ እሑድ 17:00 UTC የሚቀረውን ቀን ማስላት
+    days_ahead = (6 - now_utc.weekday()) % 7
+    target_sunday = (now_utc + timedelta(days=days_ahead)).replace(
+        hour=17, minute=0, second=0, microsecond=0
+    )
+    
+    # ዛሬ እሑድ ሆኖ ሰዓቱ ከ 17:00 UTC ካለፈ ወደ ሚቀጥለው ሳምንት እሑድ ያዞረዋል
+    if now_utc >= target_sunday:
+        target_sunday += timedelta(days=7)
+        
+    remaining = target_sunday - now_utc
+    total_seconds = int(remaining.total_seconds())
+    
+    days = total_seconds // 86400
+    hours = (total_seconds % 86400) // 3600
+    minutes = (total_seconds % 3600) // 60
+    seconds = total_seconds % 60
+    
+    if days > 0:
+        return f"{days} ቀን፣ {hours} ሰዓት፣ {minutes} ደቂቃ እና {seconds} ሰከንድ"
+    return f"{hours} ሰዓት፣ {minutes} ደቂቃ እና {seconds} ሰከንድ"
+
+
 def _format_quick_status_text(counts: dict, weekly_counts: dict, is_active: bool) -> str:
-    """Quick Status እና ከስር ሳምንታዊ ሪፖርትን የሚያሳይ ካርድ"""
+    """Quick Status እና ከስር ሳምንታዊ ሪፖርትን ከነ Countdown የሚያሳይ ካርድ"""
     reg_status_str = "🟢 ክፍት (OPEN)" if is_active else "🔴 ዝግ (CLOSED)"
     weekly_ns_total = weekly_counts['weekly_natural'] + weekly_counts['weekly_social']
+    countdown_str = _get_time_remaining_until_reset()
 
     return (
         "📊 <b>Remedial Hub — ፈጣን አጠቃላይ ሁኔታ (Quick Status)</b>\n"
@@ -116,11 +146,12 @@ def _format_quick_status_text(counts: dict, weekly_counts: dict, is_active: bool
         f"  ├ ✅ የጸደቁ (Verified)፦ <code>{weekly_counts['weekly_verified']}</code>\n"
         f"  ├ ⏳ በግምገማ ላይ (Pending)፦ <code>{weekly_counts['weekly_pending']}</code>\n"
         f"  ├ ❌ ውድቅ የተደረጉ (Discarded)፦ <code>{weekly_counts['weekly_discarded']}</code>\n"
-        f"  ├ 🔬 Verified Natural Science፦ <code>{weekly_counts['weekly_natural']}</code>\n"
-        f"  ├ 📚 Verified Social Science፦ <code>{weekly_counts['weekly_social']}</code>\n"
-        f"  └ 👥 የሳምንቱ አጠቃላይ የጸደቁ (N + S)፦ <code>{weekly_ns_total}</code>\n"
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-        "<i>🔄 መረጃውን በየሰከንዱ ለማደስ 'Refresh' የሚለውን ይጫኑ።</i>"
+        f"  ├ 🔬 የጸደቁ Natural Science፦ <code>{weekly_counts['weekly_natural']}</code>\n"
+        f"  ├ 📚 የጸደቁ Social Science፦ <code>{weekly_counts['weekly_social']}</code>\n"
+        f"  ├ 👥 የሳምንቱ አጠቃላይ የጸደቁ (N + S)፦ <code>{weekly_ns_total}</code>\n"
+        f"  └ ⏳ <b>ሳምንቱ ሊያልቅ የቀረው ጊዜ፦</b> <code>{countdown_str}</code>\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "<i>♻️ መረጃውን በየሰከንዱ ለማደስ 'Refresh' የሚለውን ይጫኑ።</i>"
     )
 
 
