@@ -29,6 +29,8 @@ class Settings:
     CBE_ACCOUNT_NAME: str = os.getenv("CBE_ACCOUNT_NAME", "Amanuel Mulugeta Negera").strip()
     ABYSSINIA_ACCOUNT_NUMBER: str = os.getenv("ABYSSINIA_ACCOUNT_NUMBER", "187858787").strip()
     ABYSSINIA_ACCOUNT_NAME: str = os.getenv("ABYSSINIA_ACCOUNT_NAME", "Amanuel Mulugeta Negera").strip()
+    TELEBIRR_ACCOUNT_NUMBER: str = os.getenv("TELEBIRR_ACCOUNT_NUMBER", "0994638237").strip()
+    TELEBIRR_ACCOUNT_NAME: str = os.getenv("TELEBIRR_ACCOUNT_NAME", "Amanuel Mulugeta Negera").strip()
     REGISTRATION_FEE_ETB: int = int(os.getenv("REGISTRATION_FEE_ETB", "600"))
 
     @property

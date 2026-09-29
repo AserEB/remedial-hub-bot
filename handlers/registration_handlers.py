@@ -14,7 +14,8 @@ from config.constants import (
     STREAM_NATURAL,
     STREAM_SOCIAL,
     BANK_CBE,
-    BANK_ABYSSINIA
+    BANK_ABYSSINIA,
+    BANK_TELEBIRR
 )
 from database.repositories.student_repo import student_repo
 from database.repositories.config_repo import config_repo
@@ -172,7 +173,7 @@ async def edit_stream_callback(update: Update, context: ContextTypes.DEFAULT_TYP
 
 
 async def bank_selected(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """ባንክ ሲመረጥ የሂሳብ ቁጥሩን (Tap-to-copy) ያቀርባል"""
+    """ባንክ/ቴሌብር ሲመረጥ የሂሳብ ቁጥሩን (Tap-to-copy) ያቀርባል"""
     query = update.callback_query
     await query.answer()
 
@@ -183,20 +184,26 @@ async def bank_selected(update: Update, context: ContextTypes.DEFAULT_TYPE):
         acc_name = settings.CBE_ACCOUNT_NAME
         acc_num = settings.CBE_ACCOUNT_NUMBER
         bank_title = "የኢትዮጵያ ንግድ ባንክ (CBE)"
-    else:
+        number_label = "የሂሳብ ቁጥር"
+    elif bank_choice == BANK_ABYSSINIA:
         acc_name = settings.ABYSSINIA_ACCOUNT_NAME
         acc_num = settings.ABYSSINIA_ACCOUNT_NUMBER
         bank_title = "አቢሲንያ ባንክ (Bank of Abyssinia)"
+        number_label = "የሂሳብ ቁጥር"
+    else:  # BANK_TELEBIRR
+        acc_name = settings.TELEBIRR_ACCOUNT_NAME
+        acc_num = settings.TELEBIRR_ACCOUNT_NUMBER
+        bank_title = "ቴሌብር (Telebirr)"
+        number_label = "ስልክ ቁጥር"
 
     fee = settings.REGISTRATION_FEE_ETB
 
     text = (
         f"🏦 <b>{bank_title} የክፍያ መረጃ፦</b>\n\n"
         f"💰 <b>የሚከፈል መጠን፦</b> <code>{fee}</code> ብር\n"
-        #"❗️ <i>ይህ ክፍያ ለ 1 ሳምንት ብቻ የሚቆይ ልዩ ቅናሽ ነው፤ ከዛ በኋላ ዋጋ ይጨምራል!</i>\n"
         f"⚠️ <i>ከ {fee} ብር በታችም ሆነ በላይ መክፈል ተቀባይነት የለውም!</i>\n\n"
         f"👤 <b>የሂሳብ ስም፦</b> <code>{acc_name}</code>\n"
-        f"💳 <b>የሂሳብ ቁጥር (ይጫኑት ኮፒ ይሆናል)፦</b>\n"
+        f"💳 <b>{number_label} (ይጫኑት ኮፒ ይሆናል)፦</b>\n"
         f"<code>{acc_num}</code>\n\n"
         "──────────────────────────────\n"
         "ክፍያ ከፈጸሙ በኋላ ከታች ያለውን <b>Send Payment Screenshot</b> የሚለውን በመጫን "
@@ -267,7 +274,7 @@ async def receipt_received(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "⏳ <b>የምዝገባ ጥያቄዎ በመገምገም ላይ ይገኛል (On Review/Pending)</b>\n\n"
         f"👤 <b>ስም፦</b> {full_name}\n"
         f"📚 <b>Stream፦</b> {stream}\n"
-        f"🏦 <b>ባንክ፦</b> {bank}\n\n"
+        f"🏦 <b>የከፈሉበት መንገድ፦</b> {bank}\n\n"
         "የከፈሉት ክፍያ በአድሚኖች ታይቶ እስኪረጋገጥ ድረስ ከ <b>2 እስከ 3 ሰዓት</b> በትዕግስት ይጠብቁ።\n"
         "ልክ እንደተረጋገጠ የመማሪያ ሊንክዎን በዚህ ቦት የምንልክልዎ ይሆናል።\n\n"
         "✨ <i>Remedial Hub — መልካም ቆይታ!</i>"
@@ -281,7 +288,7 @@ async def receipt_received(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"🆔 <b>Telegram ID፦</b> <code>{user.id}</code>\n"
         f"🏷 <b>Username፦</b> @{user.username or 'ያልተገኘ'}\n"
         f"📚 <b>Stream፦</b> <b>{stream}</b>\n"
-        f"🏦 <b>Bank፦</b> {bank}\n"
+        f"🏦 <b>Payment፦</b> {bank}\n"
     )
     admin_markup = get_admin_verification_keyboard(user.id)
 

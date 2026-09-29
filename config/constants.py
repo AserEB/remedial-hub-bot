@@ -9,6 +9,7 @@ STREAM_SOCIAL = "SOCIAL"
 # Payment Channels
 BANK_CBE = "CBE"
 BANK_ABYSSINIA = "ABYSSINIA"
+BANK_TELEBIRR = "TELEBIRR"
 
 # Registration Status
 STATUS_STARTED = "STARTED"
@@ -85,7 +86,7 @@ HOW_TO_REGISTER_CAPTION = (
     "2️⃣ <b>አሁኑኑ ይመዝገቡ (Register Now)</b> የሚለውን ይጫኑ\n"
     "3️⃣ <b>ሙሉ ስምዎን</b> ያስገቡ\n"
     "4️⃣ የትምህርት ዘርፍዎን (<b>Stream</b>) ይምረጡ\n"
-    "5️⃣ የባንክ አማራጭ (<b>CBE</b> ወይም <b>Abyssinia</b>) ይምረጡ\n"
+    "5️⃣ የክፍያ አማራጭ (<b>CBE</b>፣ <b>Abyssinia</b> ወይም <b>Telebirr</b>) ይምረጡ\n"
     "6️⃣ የከፈሉበትን ደረሰኝ (<b>Screenshot/PDF</b>) ለቦቱ ይላኩ\n"
     "7️⃣ የአድሚኑን ማረጋገጫ (<b>Approval</b>) ይጠብቁ\n"
     "8️⃣ የሚላክልዎትን <b>የግል መማሪያ ሊንክ</b> ይቀላቀሉ\n"

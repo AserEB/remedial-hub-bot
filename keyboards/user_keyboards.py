@@ -139,10 +139,11 @@ def get_stream_selection_keyboard() -> InlineKeyboardMarkup:
 
 
 def get_bank_selection_keyboard() -> InlineKeyboardMarkup:
-    """የባንክ መምረጫ አዝራሮች"""
+    """የክፍያ አማራጭ መምረጫ አዝራሮች (Telebirr ተጨምሯል)"""
     keyboard = [
         [InlineKeyboardButton("🏦 CBE (Commercial Bank of Ethiopia)", callback_data="bank_CBE", style="primary")],
         [InlineKeyboardButton("🏦 Bank of Abyssinia", callback_data="bank_ABYSSINIA", style="primary")],
+        [InlineKeyboardButton("📱 Telebirr (ቴሌብር)", callback_data="bank_TELEBIRR", style="primary")],
         [
             InlineKeyboardButton("🔄 Edit Stream", callback_data="reg_edit_stream", style="primary"),
             InlineKeyboardButton("❌ Cancel", callback_data="reg_cancel", style="danger")
