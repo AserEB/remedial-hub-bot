@@ -1,7 +1,16 @@
 from typing import Tuple, Optional, Dict, Any, List
 from datetime import datetime, timezone, timedelta
 from database.connection import supabase
-from config.constants import STATUS_VERIFIED, STATUS_DISCARDED
+from config.constants import (
+    STATUS_VERIFIED,
+    STATUS_DISCARDED,
+    STATUS_PENDING,
+    STREAM_NATURAL,
+    STREAM_SOCIAL,
+    BANK_CBE,
+    BANK_ABYSSINIA,
+    BANK_TELEBIRR
+)
 
 
 class AdminRepository:
@@ -18,8 +27,8 @@ class AdminRepository:
     ) -> Tuple[bool, str]:
         """
         Concurrency Locking:
-        አንድ አድሚን ውሳኔ መስጠት ሲጀምር ለ 120 ሰከንድ lock ያደርጋል[cite: 1]።
-        ሌላ አድሚን ቢሞክር Alert ያሳያል[cite: 1]።
+        አንድ አድሚን ውሳኔ መስጠት ሲጀምር ለ 120 ሰከንድ lock ያደርጋል[cite: 17]።
+        ሌላ አድሚን ቢሞክር Alert ያሳያል[cite: 17]።
         """
         res = self.students_table.select("*").eq("telegram_id", student_id).execute()
         if not res.data:
@@ -60,7 +69,7 @@ class AdminRepository:
         admin_name: str,
         invite_link: str
     ) -> Optional[Dict[str, Any]]:
-        """ተማሪውን VERIFY ያደርጋል፤ ሊንኩን ያስቀምጣል[cite: 1]"""
+        """ተማሪውን VERIFY ያደርጋል፤ ሊንኩን ያስቀምጣል[cite: 17]"""
         data = {
             "status": STATUS_VERIFIED,
             "processed_by_admin_id": admin_id,
@@ -84,7 +93,7 @@ class AdminRepository:
     ) -> Optional[Dict[str, Any]]:
         """
         ተማሪውን DISCARD ያደርጋል፤ ምክንያቱን ይይዛል፤
-        ቀጣይ ለ Re-registration ምቹ እንዲሆን lock ያነሳል[cite: 1]።
+        ቀጣይ ለ Re-registration ምቹ እንዲሆን lock ያነሳል[cite: 17]።
         """
         student_res = self.students_table.select("discard_count").eq("telegram_id", student_id).execute()
         current_count = student_res.data[0].get("discard_count", 0) if student_res.data else 0
@@ -104,6 +113,51 @@ class AdminRepository:
             return res.data[0]
         return None
 
+    def get_quick_status_counts(self) -> Dict[str, int]:
+        """ዳታቤዝ ላይ ያሉትን ተማሪዎች በሙሉ በየዘርፉ ቆጥሮ ፈጣን ስታቲስቲክስ ያመጣል"""
+        counts = {
+            "total_users": 0,
+            "pending": 0,
+            "verified": 0,
+            "discarded": 0,
+            "cbe": 0,
+            "abyssinia": 0,
+            "telebirr": 0,
+            "natural": 0,
+            "social": 0
+        }
+        try:
+            res = self.students_table.select("status, stream, payment_method").execute()
+            if res.data:
+                counts["total_users"] = len(res.data)
+                for row in res.data:
+                    status = row.get("status")
+                    stream = row.get("stream")
+                    bank = row.get("payment_method")
+
+                    if status == STATUS_PENDING:
+                        counts["pending"] += 1
+                    elif status == STATUS_VERIFIED:
+                        counts["verified"] += 1
+                    elif status == STATUS_DISCARDED:
+                        counts["discarded"] += 1
+
+                    if bank == BANK_CBE:
+                        counts["cbe"] += 1
+                    elif bank == BANK_ABYSSINIA:
+                        counts["abyssinia"] += 1
+                    elif bank == BANK_TELEBIRR:
+                        counts["telebirr"] += 1
+
+                    if stream == STREAM_NATURAL:
+                        counts["natural"] += 1
+                    elif stream == STREAM_SOCIAL:
+                        counts["social"] += 1
+        except Exception:
+            pass
+
+        return counts
+
     def _log_action(
         self,
         student_id: int,
@@ -113,7 +167,7 @@ class AdminRepository:
         new_status: str,
         details: str
     ):
-        """የአድሚኑን ውሳኔ በ History Log መዝግቦ ያስቀምጣል[cite: 1]"""
+        """የአድሚኑን ውሳኔ በ History Log መዝግቦ ያስቀምጣል[cite: 17]"""
         try:
             self.logs_table.insert({
                 "student_telegram_id": student_id,

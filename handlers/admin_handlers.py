@@ -14,6 +14,7 @@ from database.repositories.student_repo import student_repo
 from database.repositories.config_repo import config_repo
 from keyboards.admin_keyboards import (
     get_admin_dashboard_keyboard,
+    get_quick_status_keyboard,
     get_broadcast_confirm_keyboard,
     get_pin_confirm_keyboard
 )
@@ -77,6 +78,77 @@ async def toggle_registration_callback(update: Update, context: ContextTypes.DEF
     new_state = config_repo.toggle_registration_status(admin_id)
     await query.answer(f"ምዝገባ አሁን {'ክፍት ሆኗል!' if new_state else 'ተዘግቷል!'}", show_alert=True)
     await admin_dashboard_command(update, context)
+
+
+# ==========================================
+# QUICK STATUS DASHBOARD
+# ==========================================
+
+def _format_quick_status_text(counts: dict, is_active: bool) -> str:
+    """Quick Status metin kartını hazırlar"""
+    reg_status_str = "🟢 ክፍት (OPEN)" if is_active else "🔴 ዝግ (CLOSED)"
+    return (
+        "📊 <b>Remedial Hub — ፈጣን አጠቃላይ ሁኔታ (Quick Status)</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━\n\n"
+        f"⚙️ <b>የሲስተም ምዝገባ ሁኔታ፦</b> {reg_status_str}\n"
+        f"👥 <b>አጠቃላይ የተመዘገቡ ተጠቃሚዎች (/start)፦</b> <code>{counts['total_users']}</code>\n\n"
+        "<b>📋 የተማሪዎች ሁኔታ (Status Breakdown)፦</b>\n"
+        f"  ├ ⏳ በግምገማ ላይ (Pending)፦ <code>{counts['pending']}</code>\n"
+        f"  ├ ✅ የጸደቁ (Verified)፦ <code>{counts['verified']}</code>\n"
+        f"  └ ❌ ውድቅ የተደረጉ (Discarded)፦ <code>{counts['discarded']}</code>\n\n"
+        "<b>💳 ክፍያ የተፈጸመባቸው መንገዶች፦</b>\n"
+        f"  ├ 🏦 CBE፦ <code>{counts['cbe']}</code>\n"
+        f"  ├ 🏦 Abyssinia፦ <code>{counts['abyssinia']}</code>\n"
+        f"  └ 📱 Telebirr፦ <code>{counts['telebirr']}</code>\n\n"
+        "<b>📚 የትምህርት ዘርፍ (Stream Breakdown)፦</b>\n"
+        f"  ├ 🔬 Natural Science፦ <code>{counts['natural']}</code>\n"
+        f"  └ 📚 Social Science፦ <code>{counts['social']}</code>\n"
+        "━━━━━━━━━━━━━━━━━━━━\n"
+        "<i>🔄 መረጃውን በየሰከንዱ ለማደስ 'Refresh' የሚለውን ይጫኑ።</i>"
+    )
+
+
+async def admin_quick_status_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Quick Status menüsünü açar"""
+    query = update.callback_query
+    if not is_admin(query.from_user.id):
+        await query.answer("ፍቃድ የለዎትም!", show_alert=True)
+        return
+
+    await query.answer()
+    sys_settings = config_repo.get_settings()
+    is_active = sys_settings.get("is_registration_active", True)
+    counts = admin_repo.get_quick_status_counts()
+
+    text = _format_quick_status_text(counts, is_active)
+    await query.edit_message_text(
+        text=text,
+        parse_mode="HTML",
+        reply_markup=get_quick_status_keyboard()
+    )
+
+
+async def admin_quick_status_refresh_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Quick Status verilerini günceller"""
+    query = update.callback_query
+    if not is_admin(query.from_user.id):
+        await query.answer("ፍቃድ የለዎትም!", show_alert=True)
+        return
+
+    sys_settings = config_repo.get_settings()
+    is_active = sys_settings.get("is_registration_active", True)
+    counts = admin_repo.get_quick_status_counts()
+
+    text = _format_quick_status_text(counts, is_active)
+    try:
+        await query.edit_message_text(
+            text=text,
+            parse_mode="HTML",
+            reply_markup=get_quick_status_keyboard()
+        )
+        await query.answer("✅ መረጃው ታድሷል! (Refreshed)")
+    except Exception:
+        await query.answer("መረጃው አሁን ካለው ጋር ተመሳሳይ ነው!")
 
 
 # ==========================================

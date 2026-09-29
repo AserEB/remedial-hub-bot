@@ -11,6 +11,9 @@ def get_admin_dashboard_keyboard(is_active: bool) -> InlineKeyboardMarkup:
             InlineKeyboardButton(status_label, callback_data="admin_toggle_reg", style=status_style)
         ],
         [
+            InlineKeyboardButton("📊 Quick Status (ፈጣን ሁኔታ)", callback_data="admin_quick_status", style="primary")
+        ],
+        [
             InlineKeyboardButton("📥 Export Verified (CSV)", callback_data="export_VERIFIED", style="primary"),
             InlineKeyboardButton("📥 Export Discarded (CSV)", callback_data="export_DISCARDED", style="primary")
         ],
@@ -25,19 +28,32 @@ def get_admin_dashboard_keyboard(is_active: bool) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(keyboard)
 
 
-def get_admin_verification_keyboard(student_id: int) -> InlineKeyboardMarkup:
-    """የተማሪውን ደረሰኝ ለአድሚኖች ሲልክ የሚቀርቡ ውሳኔ ሰጪ አዝራሮች"""
+def get_quick_status_keyboard() -> InlineKeyboardMarkup:
+    """Quick Status ገጽ ስር የሚታዩ Refresh እና Back አዝራሮች"""
     keyboard = [
         [
-            InlineKeyboardButton("✅ Verify (Approve)", callback_data=f"adm_verify_{student_id}", style="success"),
-            InlineKeyboardButton("❌ Discard (Reject)", callback_data=f"adm_discard_{student_id}", style="danger")
+            InlineKeyboardButton("🔄 Refresh (አድስ)", callback_data="admin_quick_status_refresh", style="success")
+        ],
+        [
+            InlineKeyboardButton("🔙 Back to Dashboard", callback_data="admin_dashboard", style="primary")
+        ]
+    ]
+    return InlineKeyboardMarkup(keyboard)
+
+
+def get_admin_verification_keyboard(student_id: int) -> InlineKeyboardMarkup:
+    """የተማሪውን ደረሰኝ ለአድሚኖች ሲልክ የሚቀርቡ ውሳኔ ሰጪ አዝራሮች[cite: 18]"""
+    keyboard = [
+        [
+            InlineKeyboardButton("✅ Verify", callback_data=f"adm_verify_{student_id}", style="success"),
+            InlineKeyboardButton("❌ Discard", callback_data=f"adm_discard_{student_id}", style="danger")
         ]
     ]
     return InlineKeyboardMarkup(keyboard)
 
 
 def get_broadcast_confirm_keyboard() -> InlineKeyboardMarkup:
-    """Broadcast ከመላኩ በፊት የሚቀርብ ማረጋገጫ"""
+    """Broadcast ከመላኩ በፊት የሚቀርብ ማረጋገጫ[cite: 18]"""
     keyboard = [
         [
             InlineKeyboardButton("🚀 Post Now (ይላክ)", callback_data="broadcast_confirm", style="success"),
@@ -48,7 +64,7 @@ def get_broadcast_confirm_keyboard() -> InlineKeyboardMarkup:
 
 
 def get_pin_confirm_keyboard() -> InlineKeyboardMarkup:
-    """ማስታወቂያ Pin ከመደረጉ በፊት የሚቀርብ ማረጋገጫ"""
+    """ማስታወቂያ Pin ከመደረጉ በፊት የሚቀርብ ማረጋገጫ[cite: 18]"""
     keyboard = [
         [
             InlineKeyboardButton("📌 Yes (Pin ይሁን)", callback_data="pin_confirm", style="success"),

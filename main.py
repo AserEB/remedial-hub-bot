@@ -22,6 +22,8 @@ from handlers.registration_handlers import get_registration_conversation_handler
 from handlers.admin_handlers import (
     admin_dashboard_command,
     toggle_registration_callback,
+    admin_quick_status_callback,
+    admin_quick_status_refresh_callback,
     admin_verify_callback,
     admin_discard_start,
     admin_discard_reason_received,
@@ -74,10 +76,12 @@ def main():
     # 4. Student Registration Flow (ConversationHandler)
     application.add_handler(get_registration_conversation_handler())
 
-    # 5. Admin Dashboard Command & Toggle
+    # 5. Admin Dashboard Command, Quick Status & Toggle
     application.add_handler(CommandHandler("admin", admin_dashboard_command))
     application.add_handler(CallbackQueryHandler(admin_dashboard_command, pattern="^admin_dashboard$"))
     application.add_handler(CallbackQueryHandler(toggle_registration_callback, pattern="^admin_toggle_reg$"))
+    application.add_handler(CallbackQueryHandler(admin_quick_status_callback, pattern="^admin_quick_status$"))
+    application.add_handler(CallbackQueryHandler(admin_quick_status_refresh_callback, pattern="^admin_quick_status_refresh$"))
 
     # 6. Admin Verification & CSV Export Callbacks
     application.add_handler(CallbackQueryHandler(admin_verify_callback, pattern="^adm_verify_"))
