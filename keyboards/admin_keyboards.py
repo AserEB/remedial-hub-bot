@@ -11,18 +11,18 @@ def get_admin_dashboard_keyboard(is_active: bool) -> InlineKeyboardMarkup:
             InlineKeyboardButton(status_label, callback_data="admin_toggle_reg", style=status_style)
         ],
         [
-            InlineKeyboardButton("📊 Quick Status (ፈጣን ሁኔታ)", callback_data="admin_quick_status", style="primary")
+            InlineKeyboardButton("📊 Quick Status (ፈጣን ሁኔታ)", callback_data="admin_quick_status",)
         ],
         [
-            InlineKeyboardButton("📥 Export Verified (CSV)", callback_data="export_VERIFIED", style="primary"),
-            InlineKeyboardButton("📥 Export Discarded (CSV)", callback_data="export_DISCARDED", style="primary")
+            InlineKeyboardButton("📥 Export Verified (CSV)", callback_data="export_VERIFIED", style="success"),
+            InlineKeyboardButton("📥 Export Discarded (CSV)", callback_data="export_DISCARDED", style="danger")
         ],
         [
             InlineKeyboardButton("📥 Export All Students (CSV)", callback_data="export_ALL", style="primary")
         ],
         [
-            InlineKeyboardButton("📢 Send Broadcast", callback_data="admin_start_broadcast", style="primary"),
-            InlineKeyboardButton("📌 Pinned Notice", callback_data="admin_manage_pin", style="primary")
+            InlineKeyboardButton("📢 Send Broadcast", callback_data="admin_start_broadcast", style="success"),
+            InlineKeyboardButton("📌 Pinned Notice", callback_data="admin_manage_pin", style="danger")
         ]
     ]
     return InlineKeyboardMarkup(keyboard)
@@ -35,7 +35,7 @@ def get_quick_status_keyboard() -> InlineKeyboardMarkup:
             InlineKeyboardButton("🔄 Refresh (አድስ)", callback_data="admin_quick_status_refresh", style="success")
         ],
         [
-            InlineKeyboardButton("🔙 Back to Dashboard", callback_data="admin_dashboard", style="primary")
+            InlineKeyboardButton("🔙 Back to Dashboard", callback_data="admin_dashboard",)
         ]
     ]
     return InlineKeyboardMarkup(keyboard)
