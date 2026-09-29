@@ -113,8 +113,8 @@ def _get_time_remaining_until_reset() -> str:
     seconds = total_seconds % 60
     
     if days > 0:
-        return f"{days} ቀን፣ {hours} ሰዓት፣ {minutes} ደቂቃ እና {seconds} ሰከንድ"
-    return f"{hours} ሰዓት፣ {minutes} ደቂቃ እና {seconds} ሰከንድ"
+        return f"{days} d፣ {hours} h፣ {minutes} m እና {seconds} s"
+    return f"{hours} d፣ {minutes} m እና {seconds} s"
 
 
 def _format_quick_status_text(counts: dict, weekly_counts: dict, is_active: bool) -> str:
