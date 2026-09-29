@@ -89,30 +89,38 @@ async def toggle_registration_callback(update: Update, context: ContextTypes.DEF
 # ==========================================
 
 def _format_quick_status_text(counts: dict, weekly_counts: dict, is_active: bool) -> str:
-    """Quick Status እና Weekly Report በአንድ ላይ የሚያሳይ ካርድ"""
+    """Quick Status እና ከስር ሳምንታዊ ሪፖርትን የሚያሳይ ካርድ"""
     reg_status_str = "🟢 ክፍት (OPEN)" if is_active else "🔴 ዝግ (CLOSED)"
     weekly_ns_total = weekly_counts['weekly_natural'] + weekly_counts['weekly_social']
-    
+
     return (
         "📊 <b>Remedial Hub — ፈጣን አጠቃላይ ሁኔታ (Quick Status)</b>\n"
         "━━━━━━━━━━━━━━━━━━━━\n\n"
         f"⚙️ <b>የሲስተም ምዝገባ ሁኔታ፦</b> {reg_status_str}\n"
-        f"👥 <b>አጠቃላይ ተጠቃሚዎች (All Time)፦</b> <code>{counts['total_users']}</code>\n"
-        f"  ├ ✅ የጸደቁ፦ <code>{counts['verified']}</code> | ⏳ በመጠባበቅ ላይ፦ <code>{counts['pending']}</code>\n"
-        f"  └ ❌ ውድቅ የተደረጉ፦ <code>{counts['discarded']}</code>\n\n"
-        "📅 <b>የዚህ ሳምንት አፈጻጸም (Weekly Report)፦</b>\n"
-        "<i>(ከእሑድ ምሽት 2:00 ጀምሮ እስከ አሁን)</i>\n"
-        f"  ├ 🆕 የገቡ አዲስ ተማሪዎች (/start)፦ <code>{weekly_counts['weekly_total']}</code>\n"
+        f"👥 <b>አጠቃላይ የተመዘገቡ ተጠቃሚዎች (/start)፦</b> <code>{counts['total_users']}</code>\n\n"
+        "<b>📋 የተማሪዎች ሁኔታ (Status Breakdown)፦</b>\n"
+        f"  ├ ⏳ በግምገማ ላይ (Pending)፦ <code>{counts['pending']}</code>\n"
+        f"  ├ ✅ የጸደቁ (Verified)፦ <code>{counts['verified']}</code>\n"
+        f"  └ ❌ ውድቅ የተደረጉ (Discarded)፦ <code>{counts['discarded']}</code>\n\n"
+        "<b>💳 ክፍያ የተፈጸመባቸው መንገዶች፦</b>\n"
+        f"  ├ 🏦 CBE፦ <code>{counts['cbe']}</code>\n"
+        f"  ├ 🏦 Abyssinia፦ <code>{counts['abyssinia']}</code>\n"
+        f"  └ 📱 Telebirr፦ <code>{counts['telebirr']}</code>\n\n"
+        "<b>📚 የትምህርት ዘርፍ (Stream Breakdown)፦</b>\n"
+        f"  ├ 🔬 Natural Science፦ <code>{counts['natural']}</code>\n"
+        f"  ├ 📚 Social Science፦ <code>{counts['social']}</code>\n"
+        f"  └ 👥 አጠቃላይ Natural እና Social ተማሪዎች፦ <code>{counts['natural'] + counts['social']}</code>\n\n"
+        "<b>📅 የዚህ ሳምንት አፈጻጸም (Weekly Report)፦</b>\n"
+        "<i>(ከእሑድ ምሽት 2:00 ጀምሮ የተመዘገቡ)</i>\n"
+        f"  ├ 🆕 አዲስ የገቡ ተማሪዎች (/start)፦ <code>{weekly_counts['weekly_total']}</code>\n"
         f"  ├ ✅ የጸደቁ (Verified)፦ <code>{weekly_counts['weekly_verified']}</code>\n"
         f"  ├ ⏳ በግምገማ ላይ (Pending)፦ <code>{weekly_counts['weekly_pending']}</code>\n"
-        f"  ├ ❌ ውድቅ የተደረጉ፦ <code>{weekly_counts['weekly_discarded']}</code>\n"
-        f"  └ 📚 የሳምንቱ Natural & Social፦ <code>{weekly_ns_total}</code> "
-        f"({weekly_counts['weekly_natural']} N / {weekly_counts['weekly_social']} S)\n\n"
-        "💳 <b>አጠቃላይ ክፍያዎች (All Time)፦</b>\n"
-        f"  ├ 🏦 CBE፦ <code>{counts['cbe']}</code> | 🏦 Abyssinia፦ <code>{counts['abyssinia']}</code>\n"
-        f"  └ 📱 Telebirr፦ <code>{counts['telebirr']}</code>\n"
+        f"  ├ ❌ ውድቅ የተደረጉ (Discarded)፦ <code>{weekly_counts['weekly_discarded']}</code>\n"
+        f"  ├ 🔬 Natural Science፦ <code>{weekly_counts['weekly_natural']}</code>\n"
+        f"  ├ 📚 Social Science፦ <code>{weekly_counts['weekly_social']}</code>\n"
+        f"  └ 👥 የሳምንቱ Natural እና Social፦ <code>{weekly_ns_total}</code>\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
-        "<i>🔄 መረጃውን በየሰከንዱ ለማደስ 'Refresh' የሚለውን ይጫኑ።</i>"
+        "<i>♻️ መረጃውን በየሰከንዱ ለማደስ 'Refresh' የሚለውን ይጫኑ።</i>"
     )
 
 
@@ -127,7 +135,6 @@ async def admin_quick_status_callback(update: Update, context: ContextTypes.DEFA
     sys_settings = config_repo.get_settings()
     is_active = sys_settings.get("is_registration_active", True)
     
-    # የሁለቱንም ቆጠራዎች ዳታቤዝ ላይ መጥራት
     counts = admin_repo.get_quick_status_counts()
     weekly_counts = admin_repo.get_weekly_status_counts()
 
@@ -149,7 +156,6 @@ async def admin_quick_status_refresh_callback(update: Update, context: ContextTy
     sys_settings = config_repo.get_settings()
     is_active = sys_settings.get("is_registration_active", True)
     
-    # እንደገና መቁጠር
     counts = admin_repo.get_quick_status_counts()
     weekly_counts = admin_repo.get_weekly_status_counts()
 
@@ -162,7 +168,7 @@ async def admin_quick_status_refresh_callback(update: Update, context: ContextTy
         )
         await query.answer("✅ መረጃው ታድሷል! (Refreshed)")
     except Exception:
-        await query.answer("🪫መረጃው አሁን ካለው ጋር ተመሳሳይ ነው!")
+        await query.answer("⚠️መረጃው አሁን ካለው ጋር ተመሳሳይ ነው!")
 
 
 # ==========================================
