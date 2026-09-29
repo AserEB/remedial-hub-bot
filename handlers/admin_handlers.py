@@ -103,8 +103,8 @@ def _format_quick_status_text(counts: dict, is_active: bool) -> str:
         "<b>📚 የትምህርት ዘርፍ (Stream Breakdown)፦</b>\n"
         f"  ├ 🔬 Natural Science፦ <code>{counts['natural']}</code>\n"
         f"  ├ 📚 Social Science፦ <code>{counts['social']}</code>\n"
-        f"  └ 👥 አጠቃላይ Natural እና Social ተማሪዎች፦ <code>{counts['natural'] + counts['social']}</code> ({counts['natural']} Natural + {counts['social']} Social)\n"
-        "━━━━━━━━━━━━━━━━━━━━\n"
+        f"  └ 👥 አጠቃላይ Natural እና Social ተማሪዎች፦ <code>{counts['natural'] + counts['social']}</code>\n"
+        "━━━━━━━━━━━━━━━━━━━━━\n"
         "<i>🔄 መረጃውን በየሰከንዱ ለማደስ 'Refresh' የሚለውን ይጫኑ።</i>"
     )
 
