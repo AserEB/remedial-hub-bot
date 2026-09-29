@@ -116,11 +116,11 @@ def _format_quick_status_text(counts: dict, weekly_counts: dict, is_active: bool
         f"  ├ ✅ የጸደቁ (Verified)፦ <code>{weekly_counts['weekly_verified']}</code>\n"
         f"  ├ ⏳ በግምገማ ላይ (Pending)፦ <code>{weekly_counts['weekly_pending']}</code>\n"
         f"  ├ ❌ ውድቅ የተደረጉ (Discarded)፦ <code>{weekly_counts['weekly_discarded']}</code>\n"
-        f"  ├ 🔬 Natural Science፦ <code>{weekly_counts['weekly_natural']}</code>\n"
-        f"  ├ 📚 Social Science፦ <code>{weekly_counts['weekly_social']}</code>\n"
-        f"  └ 👥 የሳምንቱ Natural እና Social፦ <code>{weekly_ns_total}</code>\n"
-        "━━━━━━━━━━━━━━━━━━━━\n"
-        "<i>♻️ መረጃውን በየሰከንዱ ለማደስ 'Refresh' የሚለውን ይጫኑ።</i>"
+        f"  ├ 🔬 Verified Natural Science፦ <code>{weekly_counts['weekly_natural']}</code>\n"
+        f"  ├ 📚 Verified Social Science፦ <code>{weekly_counts['weekly_social']}</code>\n"
+        f"  └ 👥 የሳምንቱ አጠቃላይ የጸደቁ (N + S)፦ <code>{weekly_ns_total}</code>\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "<i>🔄 መረጃውን በየሰከንዱ ለማደስ 'Refresh' የሚለውን ይጫኑ።</i>"
     )
 
 

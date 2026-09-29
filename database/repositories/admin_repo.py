@@ -160,7 +160,8 @@ class AdminRepository:
 
     def get_weekly_status_counts(self) -> Dict[str, int]:
         """
-        ከእሑድ ምሽት 2:00 EAT (17:00 UTC) ጀምሮ የተመዘገቡትን ብቻ ለይቶ ይቆጥራል
+        ከእሑድ ምሽት 2:00 EAT (17:00 UTC) ጀምሮ የተመዘገቡትን ብቻ ለይቶ ይቆጥራል፤
+        Natural እና Social የሚቆጠሩት የጸደቁትን (Verified) ብቻ ነው።
         """
         counts = {
             "weekly_total": 0,
@@ -171,22 +172,19 @@ class AdminRepository:
             "weekly_social": 0
         }
         
-        # 1. ያለፈውን እሑድ ምሽት 2:00 (17:00 UTC) መነሻ ሰዓት ማስላት
+        # ያለፈውን እሑድ ምሽት 2:00 (17:00 UTC) መነሻ ሰዓት ማስላት
         now_utc = datetime.now(timezone.utc)
-        # Python weekday: Monday=0, ..., Sunday=6
         days_since_sunday = (now_utc.weekday() + 1) % 7
         target_sunday = (now_utc - timedelta(days=days_since_sunday)).replace(
             hour=17, minute=0, second=0, microsecond=0
         )
         
-        # ዛሬ እሑድ ሆኖ ገና 17:00 UTC ካልደረሰ ካለፈው ሳምንት እሑድ ይጀምራል
         if now_utc < target_sunday:
             target_sunday -= timedelta(days=7)
             
         target_iso = target_sunday.isoformat()
 
         try:
-            # created_at ከ እሑድ ምሽት 2:00 ወዲህ የሆኑትን ብቻ መምረጥ
             res = self.students_table.select("status, stream, created_at").gte("created_at", target_iso).execute()
             if res.data:
                 counts["weekly_total"] = len(res.data)
@@ -198,13 +196,13 @@ class AdminRepository:
                         counts["weekly_pending"] += 1
                     elif status == STATUS_VERIFIED:
                         counts["weekly_verified"] += 1
+                        # Natural እና Social የሚቆጠሩት VERIFIED ለሆኑት ብቻ ነው
+                        if stream == STREAM_NATURAL:
+                            counts["weekly_natural"] += 1
+                        elif stream == STREAM_SOCIAL:
+                            counts["weekly_social"] += 1
                     elif status == STATUS_DISCARDED:
                         counts["weekly_discarded"] += 1
-
-                    if stream == STREAM_NATURAL:
-                        counts["weekly_natural"] += 1
-                    elif stream == STREAM_SOCIAL:
-                        counts["weekly_social"] += 1
         except Exception:
             pass
 
