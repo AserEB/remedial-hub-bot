@@ -13,8 +13,8 @@ class Settings:
     # Channel & Group Configurations
     REQUIRED_CHANNEL_USERNAME: str = os.getenv("REQUIRED_CHANNEL_USERNAME", "@Remedial_Hub").strip()
     REQUIRED_CHANNEL_ID: int = int(os.getenv("REQUIRED_CHANNEL_ID", "-1001852983055"))
-    NATURAL_GROUP_ID: int = int(os.getenv("NATURAL_GROUP_ID", "-1004403904874"))
-    SOCIAL_GROUP_ID: int = int(os.getenv("SOCIAL_GROUP_ID", "-1004326343620"))
+    NATURAL_GROUP_ID: int = int(os.getenv("NATURAL_GROUP_ID", "-1004326343620"))
+    SOCIAL_GROUP_ID: int = int(os.getenv("SOCIAL_GROUP_ID", "-1004403904874"))
 
     # Admin Telegram IDs
     ADMIN_IDS_STR: str = os.getenv("ADMIN_IDS", "5034405093,1498230374,6511741820,5570011875")
