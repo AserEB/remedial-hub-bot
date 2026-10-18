@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime, timezone, timedelta
 from telegram import Update
 from telegram.ext import (
@@ -28,6 +29,9 @@ from services.broadcast_service import broadcast_message_to_all
 AWAITING_DISCARD_REASON = 101
 AWAITING_BROADCAST_MSG = 102
 AWAITING_PIN_TEXT = 103
+
+# የኢትዮጵያ ሰዓት አቆጣጠር (UTC+3)
+EAT = timezone(timedelta(hours=3))
 
 
 def is_admin(user_id: int) -> bool:
@@ -82,30 +86,25 @@ async def toggle_registration_callback(update: Update, context: ContextTypes.DEF
 
 
 # ==========================================
-# QUICK STATUS DASHBOARD
-# ==========================================
-
-# ==========================================
 # QUICK STATUS & WEEKLY DASHBOARD
 # ==========================================
 
 def _get_time_remaining_until_reset() -> str:
-    """ቀጣዩ እሑድ ምሽት 2:00 EAT (17:00 UTC) እስኪደርስ የቀረውን ጊዜ ያሰላል"""
-    now_utc = datetime.now(timezone.utc)
+    """ቀጣዩ እሑድ ምሽት 3:00 EAT (21:00 EAT) እስኪደርስ የቀረውን ጊዜ በትክክል ያሰላል"""
+    now_eat = datetime.now(EAT)
     
-    # Python weekday: Monday=0, ..., Sunday=6
-    # ወደ ቀጣዩ እሑድ 17:00 UTC የሚቀረውን ቀን ማስላት
-    days_ahead = (6 - now_utc.weekday()) % 7
-    target_sunday = (now_utc + timedelta(days=days_ahead)).replace(
-        hour=17, minute=0, second=0, microsecond=0
+    # ዛሬ እሑድ ከሆነ weekday() = 6 ነው
+    days_until_sunday = (6 - now_eat.weekday()) % 7
+    target_sunday = (now_eat + timedelta(days=days_until_sunday)).replace(
+        hour=21, minute=0, second=0, microsecond=0
     )
     
-    # ዛሬ እሑድ ሆኖ ሰዓቱ ከ 17:00 UTC ካለፈ ወደ ሚቀጥለው ሳምንት እሑድ ያዞረዋል
-    if now_utc >= target_sunday:
+    # ዛሬ እሑድ ሆኖ ሰዓቱ ከ 21:00 (ምሽት 3:00) ካለፈ ወደ ቀጣዩ እሑድ ምሽት 3:00 ያዞረዋል
+    if now_eat >= target_sunday:
         target_sunday += timedelta(days=7)
         
-    remaining = target_sunday - now_utc
-    total_seconds = int(remaining.total_seconds())
+    remaining = target_sunday - now_eat
+    total_seconds = max(0, int(remaining.total_seconds()))
     
     days = total_seconds // 86400
     hours = (total_seconds % 86400) // 3600
@@ -113,8 +112,8 @@ def _get_time_remaining_until_reset() -> str:
     seconds = total_seconds % 60
     
     if days > 0:
-        return f"{days}d፣ {hours}h፣ {minutes}m እና {seconds}s"
-    return f"{hours}d፣ {minutes}m እና {seconds}s"
+        return f"{days} ቀን፣ {hours} ሰዓት፣ {minutes} ደቂቃ እና {seconds} ሰከንድ"
+    return f"{hours} ሰዓት፣ {minutes} ደቂቃ እና {seconds} ሰከንድ"
 
 
 def _format_quick_status_text(counts: dict, weekly_counts: dict, is_active: bool) -> str:
@@ -141,7 +140,7 @@ def _format_quick_status_text(counts: dict, weekly_counts: dict, is_active: bool
         f"  ├ 📚 Social Science፦ <code>{counts['social']}</code>\n"
         f"  └ 👥 አጠቃላይ Natural እና Social ተማሪዎች፦ <code>{counts['natural'] + counts['social']}</code>\n\n"
         "<b>📅 የዚህ ሳምንት አፈጻጸም (Weekly Report)፦</b>\n"
-        "<i>(ከእሑድ ምሽት 2:00 ጀምሮ የተመዘገቡ)</i>\n"
+        "<i>(ከእሑድ ምሽት 3:00 ጀምሮ የተመዘገቡ)</i>\n"
         f"  ├ 🆕 አዲስ የገቡ ተማሪዎች (/start)፦ <code>{weekly_counts['weekly_total']}</code>\n"
         f"  ├ ✅ የጸደቁ (Verified)፦ <code>{weekly_counts['weekly_verified']}</code>\n"
         f"  ├ ⏳ በግምገማ ላይ (Pending)፦ <code>{weekly_counts['weekly_pending']}</code>\n"
@@ -199,7 +198,7 @@ async def admin_quick_status_refresh_callback(update: Update, context: ContextTy
         )
         await query.answer("✅ መረጃው ታድሷል! (Refreshed)")
     except Exception:
-        await query.answer("⚠️መረጃው አሁን ካለው ጋር ተመሳሳይ ነው!")
+        await query.answer("⚠️ መረጃው አሁን ካለው ጋር ተመሳሳይ ነው!")
 
 
 # ==========================================
@@ -217,7 +216,6 @@ async def admin_verify_callback(update: Update, context: ContextTypes.DEFAULT_TY
     student_id = int(query.data.replace("adm_verify_", ""))
     admin_display_name = admin.first_name
 
-    # Concurrency Lock ማረጋገጥ
     acquired, msg = admin_repo.acquire_processing_lock(
         student_id=student_id,
         admin_id=admin.id,
@@ -237,10 +235,8 @@ async def admin_verify_callback(update: Update, context: ContextTypes.DEFAULT_TY
 
     stream = student.get("stream", "NATURAL")
 
-    # 1 ሰው ብቻ የሚያስገባ ሊንክ ማመንጨት
     invite_link = await generate_single_use_invite_link(context.bot, stream, student_id)
 
-    # ዳታቤዝ ላይ VERIFIED ማድረግ
     admin_repo.verify_student(
         student_id=student_id,
         admin_id=admin.id,
@@ -248,13 +244,11 @@ async def admin_verify_callback(update: Update, context: ContextTypes.DEFAULT_TY
         invite_link=invite_link
     )
 
-    # ለአድሚኑ ማረጋገጫ ማሳየት
     await query.edit_message_caption(
         caption=f"{query.message.caption}\n\n✅ <b>በአድሚን {admin_display_name} ጸድቋል (VERIFIED)!</b>",
         parse_mode="HTML"
     )
 
-    # ለተማሪው ሊንኩን መላክ
     student_msg = (
         "🎉 <b>እንኳን ደስ አለዎት! ምዝገባዎ በተሳካ ሁኔታ ተረጋግጧል።</b>\n\n"
         f"🔗 <b>የመማሪያ ግሩፕ ሊንክዎ፦</b>\n{invite_link}\n\n"
@@ -286,7 +280,6 @@ async def admin_discard_start(update: Update, context: ContextTypes.DEFAULT_TYPE
     student_id = int(query.data.replace("adm_discard_", ""))
     admin_display_name = admin.first_name
 
-    # Lock መያዝ
     acquired, msg = admin_repo.acquire_processing_lock(
         student_id=student_id,
         admin_id=admin.id,
@@ -319,7 +312,6 @@ async def admin_discard_reason_received(update: Update, context: ContextTypes.DE
         await update.message.reply_text("የተማሪ መረጃ ተቋርጧል። እንደገና ይሞክሩ።")
         return ConversationHandler.END
 
-    # ዳታቤዝ ላይ DISCARDED ማድረግ
     admin_repo.discard_student(
         student_id=student_id,
         admin_id=admin_id,
@@ -329,7 +321,6 @@ async def admin_discard_reason_received(update: Update, context: ContextTypes.DE
 
     await update.message.reply_text(f"❌ ተማሪ <code>{student_id}</code> ውድቅ ተደርጓል። ለተማሪው መልዕክት ተልኳል።")
 
-    # ለተማሪው ምክንያቱን መላክ
     student_msg = (
         "❌ <b>የምዝገባ ጥያቄዎ ውድቅ ተደርጓል!</b>\n\n"
         f"📋 <b>ምክንያት፦</b>\n<i>{reason}</i>\n\n"
@@ -386,7 +377,7 @@ async def export_data_callback(update: Update, context: ContextTypes.DEFAULT_TYP
 
 
 # ==========================================
-# 3. BROADCAST CONVERSATION
+# 3. BROADCAST CONVERSATION (NON-BLOCKING)
 # ==========================================
 
 async def broadcast_prompt(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -419,24 +410,43 @@ async def broadcast_msg_received(update: Update, context: ContextTypes.DEFAULT_T
     return AWAITING_BROADCAST_MSG
 
 
+async def _run_broadcast_background(bot, chat_id, message_id, admin_chat_id):
+    """ቦቱን ሳያቆም በጀርባ (Background) መልዕክት የሚልክ ፈንክሽን"""
+    results = await broadcast_message_to_all(bot, chat_id, message_id)
+    try:
+        await bot.send_message(
+            chat_id=admin_chat_id,
+            text=(
+                f"✅ <b>Broadcast ተጠናቋል!</b>\n\n"
+                f"📤 በተሳካ ሁኔታ የተላከ፦ <b>{results['sent']}</b>\n"
+                f"❌ ያልተላከ (Failed/Blocked)፦ <b>{results['failed']}</b>"
+            ),
+            parse_mode="HTML"
+        )
+    except Exception:
+        pass
+
+
 async def broadcast_confirmed(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Post Now ሲባል በ 0.05s Delay መላክ"""
+    """Post Now ሲባል ቦቱን ሳያቆም ከጀርባ መላክ ይጀምራል"""
     query = update.callback_query
     await query.answer()
 
     source_chat = context.user_data.get("b_chat_id")
     source_msg = context.user_data.get("b_msg_id")
+    admin_chat = query.message.chat_id
 
-    await query.edit_message_text("🚀 መልዕክቱ እየተላከ ነው፤ እባክዎ ትንሽ ይጠብቁ...")
-
-    results = await broadcast_message_to_all(context.bot, source_chat, source_msg)
-
-    await query.message.reply_text(
-        f"✅ <b>Broadcast ተጠናቋል!</b>\n\n"
-        f"📤 በተሳካ ሁኔታ የተላከ፦ <b>{results['sent']}</b>\n"
-        f"❌ ያልተላከ (Failed/Blocked)፦ <b>{results['failed']}</b>",
+    await query.edit_message_text(
+        "🚀 <b>Broadcast ከጀርባ እየተላከ ነው!</b>\n\n"
+        "ቦቱ ስራውን ሳያቋርጥ በተመሳሳይ ሰዓት ለተማሪዎች አገልግሎት ይሰጣል። መልዕክቱ ተልኮ ሲያልቅ ሪፖርቱን እዚህ ይልክልዎታል።",
         parse_mode="HTML"
     )
+
+    # ቦቱ እንዳይቆም በ Background Task ማስኬድ
+    asyncio.create_task(
+        _run_broadcast_background(context.bot, source_chat, source_msg, admin_chat)
+    )
+
     context.user_data.clear()
     return ConversationHandler.END
 
