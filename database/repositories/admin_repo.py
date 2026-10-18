@@ -139,6 +139,11 @@ class AdminRepository:
                         counts["pending"] += 1
                     elif status == STATUS_VERIFIED:
                         counts["verified"] += 1
+                        # Stream የሚቆጠረው VERIFIED ለሆኑት ብቻ ነው
+                        if stream == STREAM_NATURAL:
+                            counts["natural"] += 1
+                        elif stream == STREAM_SOCIAL:
+                            counts["social"] += 1
                     elif status == STATUS_DISCARDED:
                         counts["discarded"] += 1
 
@@ -149,10 +154,6 @@ class AdminRepository:
                     elif bank == BANK_TELEBIRR:
                         counts["telebirr"] += 1
 
-                    if stream == STREAM_NATURAL:
-                        counts["natural"] += 1
-                    elif stream == STREAM_SOCIAL:
-                        counts["social"] += 1
         except Exception:
             pass
 
